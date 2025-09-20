@@ -33,7 +33,27 @@ import {
   // airdrop on low balance
   if (currentBalance <= LAMPORTS_PER_SOL) {
     console.log("Low balance, requesting an airdrop...");
-    await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL);
+    try {
+      const airdropSignature = await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL);
+      console.log("Airdrop requested, signature:", airdropSignature);
+      
+      // Wait for airdrop confirmation
+      await connection.confirmTransaction(airdropSignature);
+      console.log("Airdrop confirmed!");
+      
+      // Check new balance
+      const newBalance = await connection.getBalance(payer.publicKey);
+      console.log("New balance after airdrop (in SOL):", newBalance / LAMPORTS_PER_SOL);
+    } catch (error: any) {
+      console.log("Airdrop failed (likely due to rate limiting):", error.message);
+      console.log("Current balance is sufficient or you can try again later.");
+      
+      // If balance is still too low, we should exit
+      if (currentBalance < 1000000) { // Less than 0.001 SOL
+        console.log("Balance too low to proceed. Please fund your account or try again later.");
+        process.exit(1);
+      }
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -52,9 +72,16 @@ import {
   const space = 0;
 
   // request the cost (in lamports) to allocate `space` number of bytes on chain
-  const lamports = await connection.getMinimumBalanceForRentExemption(space);
-
-  console.log("Total lamports:", lamports);
+  let lamports;
+  try {
+    lamports = await connection.getMinimumBalanceForRentExemption(space);
+    console.log("Total lamports:", lamports);
+  } catch (error: any) {
+    console.log("Unable to fetch minimum balance for rent exemption:", error.message);
+    // Use a default minimum balance for 0 bytes (usually around 890880 lamports)
+    lamports = 890880;
+    console.log("Using default lamports:", lamports);
+  }
 
   // create this simple instruction using web3.js helper function
   const createAccountIx = SystemProgram.createAccount({
@@ -100,12 +127,22 @@ import {
 
   // actually send the transaction
   const sig = await connection.sendTransaction(tx);
+  console.log("Transaction sent with signature:", sig);
+
+  // Wait for transaction confirmation
+  console.log("Waiting for transaction confirmation...");
+  const confirmation = await connection.confirmTransaction(sig);
+  
+  if (confirmation.value.err) {
+    console.log("Transaction failed:", confirmation.value.err);
+    process.exit(1);
+  }
 
   /**
    * display some helper text
    */
   printConsoleSeparator();
 
-  console.log("Transaction completed.");
+  console.log("Transaction completed successfully!");
   console.log(explorerURL({ txSignature: sig }));
 })();
