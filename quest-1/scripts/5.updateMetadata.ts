@@ -19,28 +19,30 @@ import {
 } from "@metaplex-foundation/mpl-token-metadata";
 
 (async () => {
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
+  printConsoleSeparator("📝 Updating Token Metadata");
+  
+  console.log("📋 Configuration:");
+  console.log("   Payer address:", payer.publicKey.toBase58());
 
-  console.log("Payer address:", payer.publicKey.toBase58());
-
-  //////////////////////////////////////////////////////////////////////////////
+  printConsoleSeparator("📁 Loading Saved Keys");
 
   // load the stored PublicKeys for ease of use
   let localKeys = loadPublicKeysFromFile();
 
   // ensure the desired script was already run
-  if (!localKeys?.tokenMint)
-    return console.warn("No local keys were found. Please run '3.createTokenWithMetadata.ts'");
+  if (!localKeys?.tokenMint) {
+    console.error("❌ No local keys were found!");
+    console.log("💡 Please run '3.createTokenWithMetadata.ts' first");
+    return;
+  }
 
   const tokenMint: PublicKey = localKeys.tokenMint;
 
-  console.log("==== Local PublicKeys loaded ====");
-  console.log("Token's mint address:", tokenMint.toBase58());
-  console.log(explorerURL({ address: tokenMint.toBase58() }));
+  console.log("✅ Local PublicKeys loaded successfully");
+  console.log("🪙 Token mint address:", tokenMint.toBase58());
+  console.log("🔗 Explorer:", explorerURL({ address: tokenMint.toBase58() }));
 
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
+  printConsoleSeparator("⚙️ New Metadata Configuration");
 
   // define the new token config settings
   const tokenConfig = {
@@ -52,6 +54,14 @@ import {
     uri: "https://thisisnot.arealurl/new.json",
   };
 
+  console.log("📝 Updated Token Configuration:");
+  console.log("   New Name:", tokenConfig.name);
+  console.log("   New Symbol:", tokenConfig.symbol);
+  console.log("   New Metadata URI:", tokenConfig.uri);
+
+  printConsoleSeparator("🔧 Building Update Instruction");
+  
+  console.log("🔍 Deriving metadata account PDA...");
   /**
    * Build the instruction to store the token's metadata on chain
    * - derive the pda for the metadata account
@@ -64,8 +74,9 @@ import {
     METADATA_PROGRAM_ID,
   )[0];
 
-  console.log("Metadata address:", metadataAccount.toBase58());
+  console.log("📍 Metadata PDA address:", metadataAccount.toBase58());
 
+  console.log("📝 Creating metadata update instruction...");
   // Create the Metadata account for the Mint
   const updateMetadataInstruction = createUpdateMetadataAccountV2Instruction(
     {
@@ -90,6 +101,9 @@ import {
     },
   );
 
+  printConsoleSeparator("🚀 Transaction Execution");
+  
+  console.log("🔨 Building transaction with metadata update instruction");
   /**
    * Build the transaction to send to the blockchain
    */
@@ -101,25 +115,36 @@ import {
     instructions: [updateMetadataInstruction],
   });
 
-  printConsoleSeparator();
+  console.log("📡 Sending metadata update transaction...");
 
   try {
     // actually send the transaction
     const sig = await connection.sendTransaction(tx);
 
-    // print the explorer url
-    console.log("Transaction completed.");
-    console.log(explorerURL({ txSignature: sig }));
+    printConsoleSeparator("✅ Success!");
+    console.log("🎉 Token metadata updated successfully!");
+    console.log("📋 Transaction Details:");
+    console.log("   Signature:", sig);
+    console.log("   🔗 Explorer:", explorerURL({ txSignature: sig }));
+    console.log("📝 Updated Metadata:");
+    console.log("   Token Name:", tokenConfig.name);
+    console.log("   Token Symbol:", tokenConfig.symbol);
+    console.log("   Metadata URI:", tokenConfig.uri);
+    console.log("   Metadata Account:", metadataAccount.toBase58());
 
     // locally save our addresses for the demo
     // savePublicKeyToFile("tokenMint", mintKeypair.publicKey);
   } catch (err) {
-    console.error("Failed to send transaction:");
-    // console.log(tx);
+    printConsoleSeparator("❌ Transaction Failed");
+    console.error("🚨 Failed to send metadata update transaction:");
+    console.error("Error details:", err);
 
     // attempt to extract the signature from the failed transaction
     const failedSig = await extractSignatureFromFailedTransaction(connection, err);
-    if (failedSig) console.log("Failed signature:", explorerURL({ txSignature: failedSig }));
+    if (failedSig) {
+      console.log("🔍 Failed transaction signature:", failedSig);
+      console.log("🔗 Explorer:", explorerURL({ txSignature: failedSig }));
+    }
 
     throw err;
   }

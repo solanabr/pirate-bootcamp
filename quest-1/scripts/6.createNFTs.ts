@@ -10,29 +10,34 @@ import { PublicKey } from "@solana/web3.js";
 import { Metaplex, bundlrStorage, keypairIdentity } from "@metaplex-foundation/js";
 
 (async () => {
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
+  printConsoleSeparator("🖼️ Creating NFTs with Metaplex");
+  
+  console.log("📋 Configuration:");
+  console.log("   Payer address:", payer.publicKey.toBase58());
 
-  console.log("Payer address:", payer.publicKey.toBase58());
-
-  //////////////////////////////////////////////////////////////////////////////
+  printConsoleSeparator("📁 Loading Saved Keys");
 
   // load the stored PublicKeys for ease of use
   let localKeys = loadPublicKeysFromFile();
 
   // ensure the desired script was already run
-  if (!localKeys?.tokenMint)
-    return console.warn("No local keys were found. Please run '3.createTokenWithMetadata.ts'");
+  if (!localKeys?.tokenMint) {
+    console.error("❌ No local keys were found!");
+    console.log("💡 Please run '3.createTokenWithMetadata.ts' first");
+    return;
+  }
 
   const tokenMint: PublicKey = localKeys.tokenMint;
 
-  console.log("==== Local PublicKeys loaded ====");
-  console.log("Token's mint address:", tokenMint.toBase58());
-  console.log(explorerURL({ address: tokenMint.toBase58() }));
+  console.log("✅ Local PublicKeys loaded successfully");
+  console.log("🪙 Token mint address:", tokenMint.toBase58());
+  console.log("🔗 Explorer:", explorerURL({ address: tokenMint.toBase58() }));
 
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
+  printConsoleSeparator("🚢 NFT Metadata Configuration");
 
+  console.log("📝 About NFT Storage:");
+  console.log("   • Using IPFS for decentralized storage");
+  console.log("   • Checkout: https://nft.storage/ to help store images");
   /**
    * define our ship's JSON metadata
    * checkout: https://nft.storage/ to help store images
@@ -45,9 +50,22 @@ import { Metaplex, bundlrStorage, keypairIdentity } from "@metaplex-foundation/j
     image:
       "https://bafybeic75qqhfytc6xxoze2lo5af2lfhmo2kh4mhirelni2wota633dgqu.ipfs.nftstorage.link/",
   };
+  
+  console.log("🖼️ NFT Metadata:");
+  console.log("   Name:", metadata.name);
+  console.log("   Symbol:", metadata.symbol);
+  console.log("   Description:", metadata.description);
+  console.log("   Image URL:", metadata.image);
+  
   // another ship: "https://bafybeiblld2wlxyivlivnhaqbcixhzxrodjzrycjkitz3kdmzj65gebwxe.ipfs.nftstorage.link/"
   // Captain Rajovenko: "https://bafybeihww4tue5pme3h2udqvkpfbzs5zf4h2pysuoowwofbbk372vvtmja.ipfs.nftstorage.link/"
 
+  printConsoleSeparator("⚙️ Metaplex SDK Setup");
+  
+  console.log("🔧 Configuring Metaplex SDK:");
+  console.log("   • Setting up keypair identity");
+  console.log("   • Configuring Bundlr storage for devnet");
+  console.log("   • Timeout: 60 seconds");
   /**
    * Use the Metaplex sdk to handle most NFT actions
    */
@@ -65,16 +83,25 @@ import { Metaplex, bundlrStorage, keypairIdentity } from "@metaplex-foundation/j
       }),
     );
 
-  console.log("Uploading metadata...");
+  console.log("✅ Metaplex SDK configured successfully");
+
+  printConsoleSeparator("☁️ Uploading Metadata");
+  console.log("📤 Uploading JSON metadata to IPFS via Bundlr...");
 
   // upload the JSON metadata
   const { uri } = await metaplex.nfts().uploadMetadata(metadata);
 
-  console.log("Metadata uploaded:", uri);
+  console.log("✅ Metadata uploaded successfully!");
+  console.log("🔗 Metadata URI:", uri);
 
-  printConsoleSeparator("NFT details");
+  printConsoleSeparator("🎨 Creating NFT");
 
-  console.log("Creating NFT using Metaplex...");
+  console.log("🚀 Creating NFT using Metaplex SDK...");
+  console.log("📝 NFT Configuration:");
+  console.log("   • Name:", metadata.name);
+  console.log("   • Symbol:", metadata.symbol);
+  console.log("   • Royalties: 5.00% (500 basis points)");
+  console.log("   • Mutable: Yes");
 
   // create a new nft using the metaplex sdk
   const { nft, response } = await metaplex.nfts().create({
@@ -89,22 +116,42 @@ import { Metaplex, bundlrStorage, keypairIdentity } from "@metaplex-foundation/j
     isMutable: true,
   });
 
-  console.log(nft);
+  printConsoleSeparator("✅ NFT Created Successfully!");
+  console.log("🎉 Your pirate ship NFT has been minted!");
+  
+  console.log("📋 NFT Details:");
+  console.log("   Name:", nft.name);
+  console.log("   Symbol:", nft.symbol);
+  console.log("   Mint Address:", nft.address.toBase58());
+  console.log("   Metadata URI:", nft.uri);
+  console.log("   Update Authority:", nft.updateAuthorityAddress?.toBase58());
+  console.log("   Is Mutable:", nft.isMutable);
+  console.log("   Primary Sale Happened:", nft.primarySaleHappened);
+  console.log("   Seller Fee Basis Points:", nft.sellerFeeBasisPoints);
 
-  printConsoleSeparator("NFT created:");
-  console.log(explorerURL({ txSignature: response.signature }));
+  console.log("📋 Transaction Details:");
+  console.log("   Signature:", response.signature);
+  console.log("   🔗 Explorer:", explorerURL({ txSignature: response.signature }));
 
+  printConsoleSeparator("🔍 Optional: NFT Lookup Demo");
+  console.log("💡 The code below demonstrates how to find NFT info by mint address");
+  console.log("   (Currently commented out - uncomment to test)");
+  
   return;
 
   /**
-   *
+   * Optional: Demonstrate finding NFT by mint address
+   * Uncomment the code below to test NFT lookup functionality
    */
 
-  printConsoleSeparator("Find by mint:");
+  printConsoleSeparator("🔍 Finding NFT by Mint Address");
+  console.log("🔎 Looking up NFT information...");
 
   // you can also use the metaplex sdk to retrieve info about the NFT's mint
   const mintInfo = await metaplex.nfts().findByMint({
     mintAddress: tokenMint,
   });
+  
+  console.log("📋 Found NFT Information:");
   console.log(mintInfo);
 })();
