@@ -7,7 +7,7 @@ import { payer, connection } from "@/lib/vars";
 import { explorerURL, loadPublicKeysFromFile, printConsoleSeparator } from "@/lib/helpers";
 
 import { PublicKey } from "@solana/web3.js";
-import { Metaplex, bundlrStorage, keypairIdentity } from "@metaplex-foundation/js";
+import { Metaplex, keypairIdentity, mockStorage } from "@metaplex-foundation/js";
 
 (async () => {
   printConsoleSeparator("🖼️ Creating NFTs with Metaplex");
@@ -64,8 +64,8 @@ import { Metaplex, bundlrStorage, keypairIdentity } from "@metaplex-foundation/j
   
   console.log("🔧 Configuring Metaplex SDK:");
   console.log("   • Setting up keypair identity");
-  console.log("   • Configuring Bundlr storage for devnet");
-  console.log("   • Timeout: 60 seconds");
+  console.log("   • Using mock storage for metadata (for demo purposes)");
+  console.log("   • Note: In production, use proper IPFS storage");
   /**
    * Use the Metaplex sdk to handle most NFT actions
    */
@@ -75,18 +75,12 @@ import { Metaplex, bundlrStorage, keypairIdentity } from "@metaplex-foundation/j
     // set our keypair to use, and pay for the transaction
     .use(keypairIdentity(payer))
     // define a storage mechanism to upload with
-    .use(
-      bundlrStorage({
-        address: "https://devnet.bundlr.network",
-        providerUrl: "https://api.devnet.solana.com",
-        timeout: 60000,
-      }),
-    );
+    .use(mockStorage());
 
   console.log("✅ Metaplex SDK configured successfully");
 
   printConsoleSeparator("☁️ Uploading Metadata");
-  console.log("📤 Uploading JSON metadata to IPFS via Bundlr...");
+  console.log("📤 Uploading JSON metadata using mock storage...");
 
   // upload the JSON metadata
   const { uri } = await metaplex.nfts().uploadMetadata(metadata);
