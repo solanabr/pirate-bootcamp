@@ -188,8 +188,8 @@ export function explorerURL({
 }) {
   let baseUrl: string;
   //
-  if (address) baseUrl = `https://explorer.solana.com/address/${address}`;
-  else if (txSignature) baseUrl = `https://explorer.solana.com/tx/${txSignature}`;
+  if (address) baseUrl = `https://solscan.io/address/${address}`;
+  else if (txSignature) baseUrl = `https://solscan.io/tx/${txSignature}`;
   else return "[unknown]";
 
   // auto append the desired search params

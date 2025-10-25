@@ -39,11 +39,11 @@ import {
   // define the assorted token config settings
   const tokenConfig = {
     // define how many decimals we want our tokens to have
-    decimals: 9,
+    decimals: 18,
     //
-    name: "Superteam Brasil Devs",
+    name: "Superteam Brazil Online Devs",
     //
-    symbol: "STBR",
+    symbol: "oSTBR",
     //
     uri: "https://thisis.atest.superteam.com.br/info.json",
   };

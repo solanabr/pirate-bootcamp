@@ -4,7 +4,7 @@
  */
 
 // import custom helpers for demos
-import { payer, testWallet, connection, STATIC_PUBLICKEY } from "@/lib/vars";
+import { payer, testWallet, connection, STATIC_PUBLICKEY, NONEX_PUBLICKEY } from "@/lib/vars";
 import { explorerURL, printConsoleSeparator } from "@/lib/helpers";
 
 import { SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
@@ -51,7 +51,7 @@ import { SystemProgram, TransactionMessage, VersionedTransaction } from "@solana
     const balanceForRentExemption = await connection.getMinimumBalanceForRentExemption(space);
     console.log(`   Rent exemption required: ${balanceForRentExemption} lamports (${balanceForRentExemption / 1e9} SOL)`);
     
-    accountCreationAmount = balanceForRentExemption + 2_000_000;
+    accountCreationAmount = balanceForRentExemption + 1_000_000;
     console.log(`   Total lamports for account: ${accountCreationAmount} (${accountCreationAmount / 1e9} SOL)`);
     console.log(`   Additional lamports: 2,000,000 (${2_000_000 / 1e9} SOL)`);
 
@@ -107,6 +107,15 @@ import { SystemProgram, TransactionMessage, VersionedTransaction } from "@solana
     toPubkey: STATIC_PUBLICKEY,
     programId: SystemProgram.programId,
   });
+
+  const transferToErrorWalletIx = SystemProgram.transfer({
+    lamports: transferToStaticWalletAmount,
+    // `fromPubkey` - from MUST sign the transaction
+    fromPubkey: payer.publicKey,
+    // `toPubkey` - does NOT have to sign the transaction
+    toPubkey: NONEX_PUBLICKEY,
+    programId: SystemProgram.programId,
+  });
   console.log("   ✅ Second transfer instruction created");
 
   /**
@@ -141,7 +150,7 @@ import { SystemProgram, TransactionMessage, VersionedTransaction } from "@solana
   
   console.log(`   ${instructionCount}. Transfer ${transferToStaticWalletAmount} lamports to static wallet`);
   console.log(`   ${instructionCount + 1}. Transfer ${transferToTestWalletAmount} lamports to test wallet`);
-  console.log(`   ${instructionCount + 2}. Transfer ${transferToStaticWalletAmount} lamports to static wallet (again)`);
+  console.log(`   ${instructionCount + 2}. Transfer ${transferToStaticWalletAmount} lamports to error wallet (${NONEX_PUBLICKEY.toBase58()})`);
   console.log(`   Total instructions: ${instructions.length}`);
   
   const message = new TransactionMessage({
@@ -174,7 +183,7 @@ import { SystemProgram, TransactionMessage, VersionedTransaction } from "@solana
   console.log("   ✅ Transaction signed successfully");
 
   // Calculate total cost before sending
-  const totalCost = accountCreationAmount + transferToTestWalletAmount + (transferToStaticWalletAmount * 2);
+  const totalCost = accountCreationAmount + transferToTestWalletAmount + transferToStaticWalletAmount + transferToStaticWalletAmount;
   console.log(`\n💸 Transaction Summary:`);
   console.log(`   Total cost: ${totalCost} lamports (${totalCost / 1e9} SOL)`);
   
@@ -182,7 +191,8 @@ import { SystemProgram, TransactionMessage, VersionedTransaction } from "@solana
     console.log(`   Account creation: ${accountCreationAmount} lamports`);
   }
   console.log(`   Transfer to test wallet: ${transferToTestWalletAmount} lamports`);
-  console.log(`   Transfer to static wallet (2x): ${transferToStaticWalletAmount * 2} lamports`);
+  console.log(`   Transfer to static wallet: ${transferToStaticWalletAmount} lamports`);
+  console.log(`   Transfer to error wallet: ${transferToStaticWalletAmount} lamports`);
 
   // actually send the transaction
   console.log("\n🚀 Sending transaction to blockchain...");

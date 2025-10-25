@@ -43,12 +43,12 @@ import { Metaplex, keypairIdentity, mockStorage } from "@metaplex-foundation/js"
    * checkout: https://nft.storage/ to help store images
    */
   const metadata = {
-    name: "The Gradient Pearl",
-    symbol: "SHIP",
+    name: "Bootcampers Tech Floripa STBR",
+    symbol: "TECHstbr",
     description:
-      "The Gradient Pearl is a legendary Pirate ship that sails the Seven Seas. Captain Rajovenko leads with a drink can in his hand. ",
+      "hello I'm a test onchain hehe",
     image:
-      "https://bafybeic75qqhfytc6xxoze2lo5af2lfhmo2kh4mhirelni2wota633dgqu.ipfs.nftstorage.link/",
+      "https://apricot-rainy-asp-810.mypinata.cloud/ipfs/bafybeidsooyychd5i46nxpaa4i3z2qppyv62eyux7dgbkkc2iin4ronedi",
   };
   
   console.log("🖼️ NFT Metadata:");

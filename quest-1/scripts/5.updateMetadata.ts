@@ -47,11 +47,11 @@ import {
   // define the new token config settings
   const tokenConfig = {
     // new name
-    name: "New Super Sweet Token",
+    name: "New Floripa Tech STBR Token",
     // new symbol
-    symbol: "nSST",
+    symbol: "flnSTBR",
     // new uri
-    uri: "https://thisisnot.arealurl/new.json",
+    uri: "https://tech.floripa.br",
   };
 
   console.log("📝 Updated Token Configuration:");

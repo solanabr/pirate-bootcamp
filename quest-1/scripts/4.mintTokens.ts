@@ -90,7 +90,7 @@ import { getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
    * - if decimals=2, amount=10 => actual tokens minted == 0.10
    */
 
-  const amountOfTokensToMint = 1_000;
+  const amountOfTokensToMint = 1_000_000_000_000_000_000_000_000;
 
   console.log("🪙 Minting Configuration:");
   console.log("   Raw amount to mint:", amountOfTokensToMint.toLocaleString());
